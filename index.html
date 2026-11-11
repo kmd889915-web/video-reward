@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Reward</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10131b;color:white;font-family:Arial,sans-serif}
+header{padding:18px;background:#191e2a;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:22px;font-weight:bold;color:#55e6a5}
+button{border:0;border-radius:9px;padding:12px;background:#38d99a;color:#10131b;font-weight:bold}
+nav{display:flex;justify-content:space-around;background:#191e2a;padding:14px;position:sticky;top:0}
+nav button{background:transparent;color:white}
+main{max-width:650px;margin:auto;padding:15px}
+h2{font-size:20px}
+.card{background:#1c2330;border-radius:14px;padding:12px;margin:16px 0}
+video{width:100%;max-height:420px;background:#080a10;border-radius:10px}
+.placeholder{height:230px;border-radius:10px;background:linear-gradient(135deg,#174c46,#222b50);display:flex;align-items:center;justify-content:center;font-size:35px}
+.details{display:flex;justify-content:space-between;margin:14px 2px;color:#58e6a5;font-weight:bold}
+.muted{color:#aab3c2;font-size:13px}
+.page{display:none}
+.page.active{display:block}
+input,select,textarea{width:100%;padding:13px;margin:8px 0 15px;background:#101722;color:white;border:1px solid #394455;border-radius:8px}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">▶ VIDEO REWARD</div>
+<div>🔔</div>
+</header>
+
+<nav>
+<button onclick="showPage('home')">🏠 Home</button>
+<button onclick="showPage('create')">＋ Create</button>
+<button onclick="showPage('profile')">👤 Profile</button>
+</nav>
+
+<main>
+
+<section id="home" class="page active">
+<h2>Discover Shorts</h2>
+<p class="muted">Watch videos and earn points</p>
+<div id="feed">
+<div class="card">
+<div class="placeholder">▶</div>
+<h3>Welcome to Video Reward</h3>
+<p class="muted">ভিডিও পোস্ট হলে এখানে দেখা যাবে।</p>
+<div class="details">
+<span>🪙 ১০ Points</span>
+<span>⏱ ৩০ Seconds</span>
+</div>
+</div>
+</div>
+</section>
+
+<section id="create" class="page">
+<h2>Create Video</h2>
+<div class="card">
+<label>ভিডিও নির্বাচন করুন</label>
+<input type="file" id="videoFile" accept="video/*">
+<label>ভিডিওর শিরোনাম</label>
+<input id="caption" placeholder="ভিডিওর নাম লিখুন">
+<label>Reward Duration নির্বাচন করুন</label>
+<select id="duration">
+<option value="30">৩০ সেকেন্ড</option>
+<option value="45">৪৫ সেকেন্ড</option>
+<option value="60">৬০ সেকেন্ড</option>
+</select>
+<p class="muted">পয়েন্টের পরিমাণ অ্যাডমিন নির্ধারণ করবে।</p>
+<button onclick="publishVideo()">Publish Video</button>
+</div>
+</section>
+
+<section id="profile" class="page">
+<h2>My Profile</h2>
+<div class="card">
+<h3>My Account</h3>
+<p>Gmail: Login system coming soon</p>
+<div class="details">
+<span>🪙 My Points</span>
+<span id="points">0</span>
+</div>
+<p class="muted">Video creation and reward history</p>
+</div>
+</section>
+
+</main>
+
+<script>
+let totalPoints=0;
+function showPage(id){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+function publishVideo(){
+const file=document.getElementById('videoFile').files[0];
+const caption=document.getElementById('caption').value;
+const duration=Number(document.getElementById('duration').value);
+if(!file){alert('প্রথমে ভিডিও নির্বাচন করুন');return;}
+const url=URL.createObjectURL(file);
+const card=document.createElement('div');
+card.className='card';
+card.innerHTML=`
+<video controls playsinline preload="metadata" src="${url}"></video>
+<h3></h3>
+<div class="details">
+<span>🪙 ১০ Points</span>
+<span>⏱ ${duration} Seconds</span>
+</div>
+<p class="muted">Reward countdown</p>
+<div class="timer muted">ভিডিও চালিয়ে দেখুন</div>
+`;
+card.querySelector('h3').textContent=caption||'New Video';
+const video=card.querySelector('video');
+const timer=card.querySelector('.timer');
+let remaining=duration, interval=null, rewarded=false;
+video.addEventListener('play',()=>{
+if(interval||rewarded)return;
+interval=setInterval(()=>{
+if(video.paused||video.ended)return;
+remaining--;
+timer.textContent='সময় বাকি: '+remaining+' সেকেন্ড';
+if(remaining<=0){
+clearInterval(interval);
+interval=null;
+rewarded=true;
+totalPoints+=10;
+document.getElementById('points').textContent=totalPoints;
+timer.textContent='✓ Demo Reward: ১০ Points';
+}
+},1000);
+});
+video.addEventListener('pause',()=>{clearInterval(interval);interval=null;});
+video.addEventListener('ended',()=>{clearInterval(interval);interval=null;});
+document.getElementById('feed').prepend(card);
+document.getElementById('videoFile').value='';
+document.getElementById('caption').value='';
+showPage('home');
+}
+</script>
+</body>
+</html>
